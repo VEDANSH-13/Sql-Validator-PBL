@@ -3,6 +3,7 @@
 #include <stdio.h>
 %}
 
+
 %%
 "SELECT"        { return SELECT; }
 "FROM"          { return FROM; }
