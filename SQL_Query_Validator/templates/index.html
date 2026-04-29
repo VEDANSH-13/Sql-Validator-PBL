@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Query Validator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="page-wrapper">
+        <header class="top-header">
+            <div>
+                <h1>🧠 SQL Query Validator</h1>
+                <p class="subtitle">
+                    Web-based SQL validation using lexical, syntax, and semantic analysis
+                </p>
+            </div>
+        </header>
+
+        <div class="main-layout">
+
+            <!-- LEFT SIDE -->
+            <div class="left-panel">
+
+                <!-- Query Input Card -->
+                <div class="card input-card">
+                    <h2>🧾 Query Editor</h2>
+
+                    <form method="POST" id="queryForm">
+                        <label for="query">Enter SQL Query</label>
+                        <textarea
+                            name="query"
+                            id="query"
+                            rows="10"
+                            placeholder="Example:
+SELECT name, age FROM students WHERE age > 18
+INSERT INTO students VALUES (1, 'John', 20, 3)
+UPDATE students SET age = 21 WHERE id = 1
+DELETE FROM students WHERE id = 2"
+                        >{{ current_query }}</textarea>
+
+                        <div class="btn-box">
+                            <button type="submit" class="primary-btn">✅ Validate Query</button>
+                            <button type="button" class="secondary-btn" onclick="clearEditor()">🧹 Clear</button>
+                        </div>
+
+                        <div id="loadingBox" class="loading-box">
+                            <span class="spinner"></span>
+                            <span>Processing query...</span>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Result Card -->
+                {% if result %}
+                    <div class="card result-card {% if 'Error' in result %}error-card{% elif 'valid' in result.lower() %}success-card{% else %}warning-card{% endif %}">
+                        <h2>📌 Validation Result</h2>
+                        <p>{{ result }}</p>
+                    </div>
+                {% endif %}
+
+                <!-- Suggestion Card -->
+                {% if suggestion %}
+                    <div class="card suggestion-card">
+                        <h2>⚠ Suggestion</h2>
+                        <p>{{ suggestion }}</p>
+                    </div>
+                {% endif %}
+
+                <!-- Error Highlight Card -->
+                {% if highlighted_query %}
+                    <div class="card highlight-card">
+                        <h2>❌ Error Highlight</h2>
+                        <pre>{{ highlighted_query }}</pre>
+                    </div>
+                {% endif %}
+
+                <!-- Tokens Card -->
+                {% if tokens %}
+                    <div class="card token-card">
+                        <h2>📊 Generated Tokens</h2>
+                        <div class="table-wrapper">
+                            <table>
+                                <tr>
+                                    <th>Token Type</th>
+                                    <th>Value</th>
+                                </tr>
+                                {% for token in tokens %}
+                                <tr>
+                                    <td>{{ token[0] }}</td>
+                                    <td>{{ token[1] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <!-- RIGHT SIDE -->
+            <div class="right-panel">
+                <div class="card history-card">
+                    <div class="history-header">
+                        <h2>📜 Recent Queries</h2>
+                        <span class="history-badge">Last 5</span>
+                    </div>
+
+                    {% if history %}
+                        <div class="history-list">
+                            {% for item in history %}
+                                <div class="history-item" onclick="fillQuery(`{{ item.query | replace('`', '\\`') }}`)">
+                                    <div class="history-query">{{ item.query }}</div>
+                                    <div class="history-status {% if item.status == 'Valid' %}valid-status{% else %}error-status{% endif %}">
+                                        {{ item.status }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="empty-history">No recent queries yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function fillQuery(queryText) {
+            document.getElementById("query").value = queryText;
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function clearEditor() {
+            document.getElementById("query").value = "";
+        }
+
+        document.getElementById("queryForm").addEventListener("submit", function () {
+            document.getElementById("loadingBox").style.display = "flex";
+        });
+    </script>
+
+</body>
+</html>
